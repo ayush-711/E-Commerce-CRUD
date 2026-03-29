@@ -1,0 +1,12 @@
+->utils = settings.py
+database has to go in inference log
+_database_init_
+utils mei sirf constant hone chahiye , app constants => app se related jo bhi constants honge yahan define honge like secrect key !
+
+Required - Global Exception Handler 
+
+Required - Role based access 
+1. Admin
+2. User => jo saarey products ko dekh skta hai 
+3. Supplier => 
+

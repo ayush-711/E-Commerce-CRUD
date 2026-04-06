@@ -4,6 +4,12 @@ from schemas.product_schema import ProductCreate
 from database import db
 from bson import ObjectId
 from utils.Constants.app_constants import ERROR_MESSAGES, SUCCESS_MESSAGES
+from Exceptions.decorators import (
+    handle_validation_exceptions,
+    handle_db_exceptions,
+    handle_admin_exceptions,
+    handle_exceptions
+)
 
 router = APIRouter()
 
@@ -11,6 +17,8 @@ router = APIRouter()
 
 @router.post("/")
 @router.post("/create-product")
+@handle_validation_exceptions
+@handle_db_exceptions
 async def create_product(product: ProductCreate, user=Depends(verify_role(["admin", "supplier"]))):
     """
     Admin or Supplier: Create a new product/supply
@@ -26,11 +34,13 @@ async def create_product(product: ProductCreate, user=Depends(verify_role(["admi
 # ===================== PRODUCT RETRIEVAL =====================
 
 @router.get("/protected")
+@handle_exceptions
 async def protected_route(user=Depends(verify_token)):
     """Test endpoint - all authenticated users"""
     return {"msg": "Authorized", "email": user.get("email"), "role": user.get("role")}
 
 @router.get("/get-products")
+@handle_db_exceptions
 async def get_products(user=Depends(verify_token)):
     """
     All users: View products based on their role
@@ -47,6 +57,7 @@ async def get_products(user=Depends(verify_token)):
     return products
 
 @router.get("/my-products")
+@handle_db_exceptions
 async def get_my_products(user=Depends(verify_token)):
     """
     User/Supplier/Admin: Get products owned by current user
@@ -62,6 +73,8 @@ async def get_my_products(user=Depends(verify_token)):
 # ===================== PRODUCT UPDATE =====================
 
 @router.put("/update-product/{id}")
+@handle_validation_exceptions
+@handle_db_exceptions
 async def update_product(id: str, product: ProductCreate, user=Depends(verify_token)):
     """
     Admin: Update any product
@@ -91,6 +104,7 @@ async def update_product(id: str, product: ProductCreate, user=Depends(verify_to
 # ===================== PRODUCT DELETION =====================
 
 @router.delete("/delete-product/{id}")
+@handle_db_exceptions
 async def delete_product(id: str, user=Depends(verify_token)):
     """
     Admin: Delete any product
@@ -117,6 +131,8 @@ async def delete_product(id: str, user=Depends(verify_token)):
 # ===================== ADMIN ENDPOINTS =====================
 
 @router.delete("/admin/delete-product/{id}")
+@handle_admin_exceptions
+@handle_db_exceptions
 async def admin_delete_product(id: str, admin_user=Depends(verify_role(["admin"]))):
     """
     Admin only: Force delete any product (even if suspected malicious activity)
@@ -129,6 +145,8 @@ async def admin_delete_product(id: str, admin_user=Depends(verify_role(["admin"]
     return {"msg": f"Product {id} forcefully {SUCCESS_MESSAGES['product_deleted'].lower()}"}
 
 @router.get("/admin/all-products")
+@handle_admin_exceptions
+@handle_db_exceptions
 async def admin_view_all_products(admin_user=Depends(verify_role(["admin"]))):
     """
     Admin only: View all products with owner information
@@ -142,6 +160,8 @@ async def admin_view_all_products(admin_user=Depends(verify_role(["admin"]))):
     return products
 
 @router.get("/admin/products-by-supplier/{supplier_email}")
+@handle_admin_exceptions
+@handle_db_exceptions
 async def admin_view_supplier_products(
     supplier_email: str,
     admin_user=Depends(verify_role(["admin"]))

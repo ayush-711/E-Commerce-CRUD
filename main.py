@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from routes import user , product
 from database import db
 from Exceptions.exception_handler import register_exception_handlers
+from Exceptions.decorators import handle_exceptions
 
 app = FastAPI()
 
@@ -9,6 +10,7 @@ app = FastAPI()
 register_exception_handlers(app)
 
 @app.get("/")
+@handle_exceptions
 async def test():
     return {"msg": "working"}
 
